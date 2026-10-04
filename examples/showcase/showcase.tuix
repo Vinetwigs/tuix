@@ -1,0 +1,59 @@
+<App title="TUIX Showcase">
+  <State key="user" value="ada"/>
+  <State key="role" value="operator"/>
+  <State key="display" value=""/>
+  <State key="confirmed" value="-"/>
+  <State key="clicks" value="0"/>
+  <State key="status" value="ready"/>
+
+  <Column gap="0" padding="0">
+    <Text value=" TUIX SHOWCASE - control panel (mouse + keyboard) " fg="white" bg="blue" bold="true"/>
+    <Row gap="1" padding="0">
+      <Box title="Menu" width="18" padding="1">
+        <Column gap="0">
+          <Button id="mNew" label="New" onActivate="onNew"/>
+          <Button id="mSave" label="Save" onActivate="onSave"/>
+          <Button id="mReset" label="Reset" onActivate="onReset"/>
+          <Button id="mQuit" label="Quit" quit="true"/>
+        </Column>
+      </Box>
+      <Column gap="0">
+        <Grid columns="3" gap="1">
+          <Box title="Clicks">
+            <Text value="{clicks}"/>
+          </Box>
+          <Box title="Display">
+            <Text value="{display}"/>
+          </Box>
+          <Box title="Confirmed">
+            <Text value="{confirmed}"/>
+          </Box>
+        </Grid>
+        <Box title="Login" padding="1">
+          <Column gap="0">
+            <Input id="inUser" bind="user" placeholder="user"/>
+            <Input id="inRole" bind="role" placeholder="role"/>
+            <Button id="bLogin" label="Login as {user}" onActivate="onLogin"/>
+          </Column>
+        </Box>
+        <Box title="Keypad - click or Tab+Enter" padding="1">
+          <Grid columns="3" gap="1">
+            <Button id="k1" label="1" onActivate="onDigit"/>
+            <Button id="k2" label="2" onActivate="onDigit"/>
+            <Button id="k3" label="3" onActivate="onDigit"/>
+            <Button id="k4" label="4" onActivate="onDigit"/>
+            <Button id="k5" label="5" onActivate="onDigit"/>
+            <Button id="k6" label="6" onActivate="onDigit"/>
+            <Button id="k7" label="7" onActivate="onDigit"/>
+            <Button id="k8" label="8" onActivate="onDigit"/>
+            <Button id="k9" label="9" onActivate="onDigit"/>
+            <Button id="kC" label="C" onActivate="onClear"/>
+            <Button id="k0" label="0" onActivate="onDigit"/>
+            <Button id="kOK" label="OK" onActivate="onConfirm"/>
+          </Grid>
+        </Box>
+      </Column>
+    </Row>
+    <Text value=" {badge} | status: {status} | Tab/click: focus - Esc: quit " fg="black" bg="yellow"/>
+  </Column>
+</App>

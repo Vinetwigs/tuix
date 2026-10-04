@@ -1,0 +1,35 @@
+# Changelog
+
+All notable changes to TUIX are recorded here. Format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [Unreleased]
+
+## [0.1.0] - 2026-10-04
+
+First public release. Early development status: the API works and is
+tested, but may still change before v1.
+
+### Added
+
+- Declarative `.tuix` markup (XML) with `App`, `State`, `Column`,
+  `Row`, `Box`, `Grid`, `Text`, `Button`, `Input`, `List`, `Spacer`,
+  and `Include`.
+- Reactive store: `{key}` bindings, `Computed` derived values,
+  change watchers.
+- Layout engine: desired-height sizing, `fill`/`flex` sharing,
+  `gap`, `padding`, `align`, box borders, grid cells, clipping.
+- Input: mid-text cursor (`Left`/`Right`/`Home`/`End`/`Delete`,
+  click to position), `echo` password masking, `multiline` editing
+  with 2D cursor movement.
+- Text word wrapping with `maxLines`.
+- Selectable, scrollable `List` with keyboard, mouse, and `Select`
+  events.
+- Mouse support: click to press buttons, focus inputs, select
+  list rows.
+- `App.Notify` for background refresh (timers, watchers).
+- Markup errors with source line numbers.
+- Headless rendering (`RenderCells`) for tests and screenshots.
+- Custom components via `RegisterComponent`.
+- Examples: demo, showcase, todo (persistent), studio (playground).
+- Full tag reference in `docs/tags.md`.

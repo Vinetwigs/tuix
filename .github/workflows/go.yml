@@ -1,0 +1,26 @@
+name: go
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        go: ['stable']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Format check
+        run: |
+          out=$(gofmt -l .)
+          if [ -n "$out" ]; then echo "unformatted: $out"; exit 1; fi
+        shell: bash
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test -count=1 ./...

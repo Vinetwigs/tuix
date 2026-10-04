@@ -1,0 +1,5 @@
+<App title="Mystery demo">
+  <Column gap="1" padding="1">
+    <Frobnicate frob="true"/>
+  </Column>
+</App>

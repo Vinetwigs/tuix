@@ -1,0 +1,23 @@
+<App title="tutask">
+  <State key="tasks" value=""/>
+  <State key="newTask" value=""/>
+  <State key="status" value="ready"/>
+
+  <Column gap="0" padding="0">
+    <Text value=" TUTASK - terminal todo list (autosaves to tasks.json) " fg="white" bg="green" bold="true"/>
+    <Row gap="1" padding="0">
+      <Input id="inNew" bind="newTask" placeholder="new task, Enter adds" onEnter="onAdd"/>
+      <Button id="bAdd" label="Add" width="10" onActivate="onAdd"/>
+    </Row>
+    <Box title="Tasks" padding="1">
+      <List id="tasks" source="tasks" rows="10" onActivate="onToggle" empty="(no tasks - add one above)"/>
+    </Box>
+    <Row gap="1" padding="0">
+      <Button id="bToggle" label="Toggle" onActivate="onToggle"/>
+      <Button id="bDel" label="Delete" onActivate="onDelete"/>
+      <Button id="bClear" label="Clear done" onActivate="onClearDone"/>
+      <Button id="bQuit" label="Quit" quit="true"/>
+    </Row>
+    <Text value=" {done}/{total} done | {status} " fg="black" bg="yellow"/>
+  </Column>
+</App>

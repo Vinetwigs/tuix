@@ -1,0 +1,22 @@
+<App title="TUIX Demo">
+  <State key="name" value="ada"/>
+  <State key="clicks" value="0"/>
+
+  <Column gap="1" padding="1">
+    <Text value="TUIX declarative demo (Tab: focus, Enter: press, Esc: quit)" />
+    <Box title="Profile" padding="1">
+      <Column gap="1">
+        <Text value="Hello {name}!" fg="green" bold="true" />
+        <Text value="Shout: {shout}" fg="yellow" />
+        <Input id="name" bind="name" placeholder="type your name" />
+      </Column>
+    </Box>
+    <Row gap="2">
+      <Button id="click" label="Click me" onActivate="onClick" />
+      <Button id="reset" label="Reset" onActivate="onReset" />
+      <Button id="quit" label="Quit" quit="true" />
+    </Row>
+    <Text value="Clicks: {clicks}" />
+    <Include src="card.tuix" />
+  </Column>
+</App>

@@ -1,0 +1,5 @@
+<App title="Broken demo">
+  <Column gap="1" padding="1">
+    <Text value="Mismatched close"/>
+  </Row>
+</App>

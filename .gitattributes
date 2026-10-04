@@ -1,0 +1,8 @@
+# Normalize line endings to LF in the repository.
+* text=auto
+*.go text eol=lf
+*.mod text eol=lf
+*.sum text eol=lf
+*.md text eol=lf
+*.tuix text eol=lf
+*.yml text eol=lf

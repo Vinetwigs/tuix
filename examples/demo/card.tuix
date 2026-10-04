@@ -1,0 +1,5 @@
+<App>
+  <Box title="Included card" padding="1">
+    <Text value="This card comes from card.tuix via Include." />
+  </Box>
+</App>

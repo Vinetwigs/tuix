@@ -1,0 +1,22 @@
+# Build output
+*.exe
+*.test
+*.out
+/bin/
+/dist/
+
+# Coverage
+coverage.out
+coverage.html
+
+# App runtime files (created by running the examples)
+tasks.json
+
+# Local-only design notes (kept out of the repo on purpose)
+DESIGN.md
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

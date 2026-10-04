@@ -1,0 +1,10 @@
+<App title="Login form">
+  <State key="user" value="ada"/>
+  <Column gap="1" padding="1">
+    <Text value="Welcome back, {user}, to the show that never ends and keeps on wrapping forever"/>
+    <Input id="user" bind="user" placeholder="user"/>
+    <Input id="pw" bind="pw" echo="*" placeholder="password"/>
+    <List id="roles" source="roles" rows="3"/>
+    <Button id="go" label="Login" onActivate="onLogin"/>
+  </Column>
+</App>

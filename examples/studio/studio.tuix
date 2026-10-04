@@ -1,0 +1,46 @@
+<App title="TUIX Studio">
+  <State key="snippets" value=""/>
+  <State key="snippetName" value=""/>
+  <State key="code" value=""/>
+  <State key="result" value="Pick a snippet and press Enter (or click Open)."/>
+  <State key="outline" value=""/>
+  <State key="password" value=""/>
+  <State key="clock" value="--:--:--"/>
+  <State key="status" value="ready"/>
+
+  <Column gap="0" padding="0">
+    <Text value=" TUIX STUDIO - snippet playground [{clock}] " fg="white" bg="magenta" bold="true"/>
+    <Row gap="1" padding="0">
+      <Box title="Snippets" width="22" padding="1">
+        <Column gap="0">
+          <List id="snips" source="snippets" rows="10" onActivate="onOpen" empty="(no snippets)"/>
+          <Button id="bOpen" label="Open" onActivate="onOpen"/>
+        </Column>
+      </Box>
+      <Column gap="0">
+        <Row gap="1" padding="0">
+          <Input id="inName" bind="snippetName" placeholder="snippet name"/>
+          <Button id="bNew" label="New" onActivate="onNew"/>
+          <Button id="bValidate" label="Validate" onActivate="onValidate"/>
+          <Button id="bSave" label="Publish" onActivate="onSave"/>
+        </Row>
+        <Box title="Editor (multiline)" padding="1">
+          <Input id="ed" bind="code" multiline="true" height="9" onChange="onEdit" placeholder="type .tuix markup here"/>
+        </Box>
+        <Row gap="1" padding="0">
+          <Box title="Validation" padding="1">
+            <Text id="txResult" value="{result}" wrap="true" maxLines="4"/>
+          </Box>
+          <Box title="Outline" padding="1">
+            <List id="out" source="outline" rows="6" empty="(validate to see outline)"/>
+          </Box>
+        </Row>
+        <Row gap="1" padding="0">
+          <Input id="pw" bind="password" echo="*" placeholder="password to publish (hint: tuix)"/>
+          <Button id="bQuit" label="Quit" quit="true"/>
+        </Row>
+      </Column>
+    </Row>
+    <Text value=" {status} | Tab/click: navigate - Enter: open/confirm - Esc: quit " fg="black" bg="yellow"/>
+  </Column>
+</App>

@@ -1,0 +1,6 @@
+<App title="Hello">
+  <Column gap="1" padding="1">
+    <Text value="Hello {name}!" fg="green" bold="true"/>
+    <Button id="ok" label="OK" onActivate="onOk"/>
+  </Column>
+</App>
