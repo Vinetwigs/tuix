@@ -1,8 +1,7 @@
 # TUIX tag reference
 
 This is the canonical reference for `.tuix` markup. It is updated
-whenever markup changes — treat that as part of the change, not as
-follow-up work.
+whenever markup changes.
 
 A document is XML with a mandatory `<App>` root:
 
@@ -131,7 +130,7 @@ height is rows times the tallest child plus gaps and padding.
 | `wrap` | `true` | Word-wrap at the component width; `false` keeps one clipped line |
 | `maxLines` | `0` (fit height) | Cap on rendered lines |
 
-Wrapped text needs an explicit `height` — layout sizes plain text to
+Wrapped text needs an explicit `height`;  layout sizes plain text to
 one row and will not guess wrapped height. Only the rectangle's rows
 are drawn; the rest is clipped.
 
