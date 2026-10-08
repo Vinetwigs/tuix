@@ -1,4 +1,4 @@
-# TUIX
+# tuix
 
 [![CI](https://github.com/Vinetwigs/tuix/actions/workflows/go.yml/badge.svg)](https://github.com/Vinetwigs/tuix/actions/workflows/go.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/Vinetwigs/tuix.svg)](https://pkg.go.dev/github.com/Vinetwigs/tuix)
