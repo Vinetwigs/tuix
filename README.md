@@ -34,7 +34,7 @@ if err := app.Run(); err != nil {
 }
 ```
 
-> Status: early development (`v0.1.0`). It builds, it runs, and it is
+> Status: early development (`v0.2.0`). It builds, it runs, and it is
 > tested but the API has only been used by its own examples so far
 > and may still change before `v1`. Tested on Windows; Linux and macOS
 > should work through tcell but have not been tried yet.
@@ -76,6 +76,7 @@ presses buttons and focuses inputs and list rows.
 | `examples/showcase` | Dashboard: stats grid, login form, clickable keypad | `go run ./examples/showcase` |
 | `examples/todo` | Persistent todo list, autosaved to `tasks.json` | `go run ./examples/todo` |
 | `examples/studio` | `.tuix` playground: edit snippets, live validation with line numbers, AST outline, password-gated publishing | `go run ./examples/studio` |
+| `examples/dash` | Live CI/CD dashboard: progress bars, sparkline and bar chart, run table, threshold slider, toggles | `go run ./examples/dash` |
 
 ## Markup
 
@@ -90,6 +91,10 @@ The short version:
   `onChange`/`onEnter`, `echo` for passwords, `multiline`),
   `List` (`source` key with one row per line, `rows`, `onSelect`,
   `empty` placeholder), `Spacer`.
+- **Visual elements:** `Divider` (rule with optional `label`),
+  `ProgressBar` (`bind`, `max`), `Checkbox` (`bind`, `label`),
+  `Slider` (`bind`, `min`/`max`/`step`), `Sparkline` and `BarChart`
+  (numeric series charts), `Table` (`columns`, `source`).
 - **State:** `<State key="..." value="..."/>` seeds the store;
   `{key}` anywhere in text interpolates the current value and
   re-renders on change. `{{` and `}}` escape braces.

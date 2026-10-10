@@ -1,8 +1,9 @@
 // Package layout computes component rectangles for a given screen size.
 //
 // Supported containers: Row, Column, Box, Grid. Leaf widgets (Text,
-// Button, Input, Spacer) report a natural height; containers arrange
-// children honoring gap, padding, align and flex.
+// Button, Input, Spacer, List, Divider, ProgressBar, Checkbox,
+// Sparkline, Slider, BarChart, Table) report a natural height;
+// containers arrange children honoring gap, padding, align and flex.
 //
 // Attributes:
 //
@@ -86,8 +87,25 @@ func desiredHeight(c *component.Component) int {
 	pad := atoi(c.Attr("padding", "0"), 0)
 	gap := atoi(c.Attr("gap", "0"), 0)
 	switch c.Type {
-	case component.TextType, component.TypeSpacer:
+	case component.TextType, component.TypeSpacer, component.TypeDivider,
+		component.TypeProgress, component.TypeCheckbox, component.TypeSparkline,
+		component.TypeSlider:
 		return 1
+	case component.TypeBarChart:
+		return 3
+	case component.TypeTable:
+		rows := atoi(c.Attr("rows", "5"), 5)
+		if rows < 1 {
+			rows = 1
+		}
+		h := rows
+		if c.Attr("columns", "") != "" {
+			h += 2 // header + rule
+		}
+		if c.Attr("border", "false") == "true" {
+			h += 2
+		}
+		return h
 	case component.TypeList:
 		// Content comes from the store (unknown here): rows of visible
 		// lines, scrollable. Explicit height wins via fixedSize above.
@@ -291,6 +309,13 @@ func layoutRow(c *component.Component, r Rect, m Map) {
 	totalFlex := 0
 	used := 0
 	for i, k := range kids {
+		if k.Type == component.TypeDivider && k.Attr("vertical", "false") == "true" {
+			if _, ok := fixedSize(k, "w"); !ok {
+				widths[i] = 1
+				used++
+				continue
+			}
+		}
 		if w, ok := fixedSize(k, "w"); ok {
 			widths[i] = w
 		} else if isFill(k, "w") {

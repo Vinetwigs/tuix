@@ -3,7 +3,8 @@
 //
 // Built-in primitives:
 //
-//	App, Column, Row, Box, Grid, Text, Button, Input, Spacer, List
+//	App, Column, Row, Box, Grid, Text, Button, Input, Spacer, List,
+//	Divider, ProgressBar, Checkbox, Sparkline, Slider, BarChart, Table
 //
 // Custom components can be registered with Register and then used as
 // tags in .tuix markup. A Factory receives the raw attributes and the
@@ -20,17 +21,24 @@ import (
 
 // Valid built-in component types.
 const (
-	TypeApp     = "App"
-	TypeColumn  = "Column"
-	TypeRow     = "Row"
-	TypeBox     = "Box"
-	TypeGrid    = "Grid"
-	TextType    = "Text"
-	TypeButton  = "Button"
-	TypeInput   = "Input"
-	TypeSpacer  = "Spacer"
-	TypeList    = "List"
-	TypeInclude = "Include" // resolved by the parser, never reaches Build
+	TypeApp       = "App"
+	TypeColumn    = "Column"
+	TypeRow       = "Row"
+	TypeBox       = "Box"
+	TypeGrid      = "Grid"
+	TextType      = "Text"
+	TypeButton    = "Button"
+	TypeInput     = "Input"
+	TypeSpacer    = "Spacer"
+	TypeList      = "List"
+	TypeDivider   = "Divider"
+	TypeProgress  = "ProgressBar"
+	TypeCheckbox  = "Checkbox"
+	TypeSparkline = "Sparkline"
+	TypeSlider    = "Slider"
+	TypeBarChart  = "BarChart"
+	TypeTable     = "Table"
+	TypeInclude   = "Include" // resolved by the parser, never reaches Build
 )
 
 // Component is a single UI node with resolved metadata.
@@ -59,7 +67,7 @@ func Register(name string, f Factory) error {
 		return fmt.Errorf("component: invalid registration for %q", name)
 	}
 	switch name {
-	case TypeApp, TypeColumn, TypeRow, TypeBox, TypeGrid, TextType, TypeButton, TypeInput, TypeSpacer, TypeList:
+	case TypeApp, TypeColumn, TypeRow, TypeBox, TypeGrid, TextType, TypeButton, TypeInput, TypeSpacer, TypeList, TypeDivider, TypeProgress, TypeCheckbox, TypeSparkline, TypeSlider, TypeBarChart, TypeTable:
 		return fmt.Errorf("component: %q is a built-in type", name)
 	}
 	registry[name] = f
@@ -150,6 +158,12 @@ func buildNode(n *ast.Node) (*Component, error) {
 	case TypeList:
 		c.Focusable = true
 		c.Sel = -1
+	case TypeCheckbox:
+		c.Focusable = true
+	case TypeSlider:
+		c.Focusable = true
+	case TypeDivider, TypeProgress, TypeSparkline, TypeBarChart, TypeTable:
+		// visual leaves: nothing special
 	case TextType:
 		c.Text = c.Attrs["value"]
 		if c.Text == "" {
@@ -319,6 +333,20 @@ func NormalizedType(t string) string {
 		return TypeSpacer
 	case "list":
 		return TypeList
+	case "divider":
+		return TypeDivider
+	case "progressbar", "progress", "bar":
+		return TypeProgress
+	case "checkbox", "check":
+		return TypeCheckbox
+	case "sparkline", "spark":
+		return TypeSparkline
+	case "slider", "range":
+		return TypeSlider
+	case "barchart", "bars":
+		return TypeBarChart
+	case "table", "grid-table":
+		return TypeTable
 	}
 	return up
 }

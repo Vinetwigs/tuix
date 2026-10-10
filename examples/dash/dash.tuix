@@ -1,0 +1,51 @@
+<App title="tuicd">
+  <State key="clock" value="--:--:--"/>
+  <State key="build" value="0"/>
+  <State key="test" value="0"/>
+  <State key="deploy" value="0"/>
+  <State key="overall" value="0"/>
+  <State key="history" value=""/>
+  <State key="bars" value=""/>
+  <State key="runs" value=""/>
+  <State key="threshold" value="30"/>
+  <State key="pause" value="false"/>
+  <State key="compact" value="false"/>
+  <State key="notify" value="false"/>
+  <State key="log" value=""/>
+  <State key="status" value="starting"/>
+
+  <Column gap="0" padding="1">
+    <Text value=" TUICD - pipeline dashboard   {clock} " fg="white" bg="blue" bold="true"/>
+    <Divider char="-" label="stages"/>
+    <Row gap="1">
+      <Text value="build " width="7"/>
+      <ProgressBar bind="build" max="100" fill="#" empty="."/>
+    </Row>
+    <Row gap="1">
+      <Text value="test " width="7"/>
+      <ProgressBar bind="test" max="100" fill="#" empty="."/>
+    </Row>
+    <Row gap="1">
+      <Text value="deploy " width="7"/>
+      <ProgressBar bind="deploy" max="100" fill="#" empty="."/>
+    </Row>
+    <Divider char="-" label="overall"/>
+    <ProgressBar bind="overall" max="100"/>
+    <Divider char="-" label="build time trend (s)"/>
+    <Sparkline source="history" chars=".:-=+*#"/>
+    <Divider char="-" label="recent builds (s)"/>
+    <BarChart source="bars" height="3" max="60"/>
+    <Divider char="-" label="runs"/>
+    <Table columns="RUN,STATUS,TIME" source="runs" widths="5,8,7" empty="(waiting for the first run)"/>
+    <Divider char="-" label="alert threshold (s)"/>
+    <Slider id="thr" bind="threshold" min="10" max="60" step="5" fill="=" empty="-" knob="O" onChange="onThreshold"/>
+    <Divider/>
+    <Row gap="2">
+      <Checkbox id="pause" bind="pause" label="Pause" onChange="onToggle"/>
+      <Checkbox id="compact" bind="compact" label="Compact" onChange="onToggle"/>
+      <Checkbox id="notify" bind="notify" label="Notify" onChange="onToggle"/>
+    </Row>
+    <Text value="{log}" wrap="true" maxLines="2" height="2"/>
+    <Text value=" {status} " fg="black" bg="yellow"/>
+  </Column>
+</App>

@@ -86,3 +86,43 @@ func TestListBuild(t *testing.T) {
 		t.Fatalf("focusables = %d", len(got))
 	}
 }
+
+func TestVisualTagsBuild(t *testing.T) {
+	root := node("App", nil,
+		node("Divider", nil),
+		node("progressbar", nil),
+		node("check", map[string]string{"id": "c", "bind": "done"}),
+		node("Sparkline", nil),
+		node("slider", map[string]string{"id": "s", "bind": "lvl"}),
+		node("BarChart", nil),
+		node("table", nil),
+	)
+	c, err := Build(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{
+		TypeDivider, TypeProgress, TypeCheckbox, TypeSparkline,
+		TypeSlider, TypeBarChart, TypeTable,
+	}
+	for i, w := range want {
+		if c.Children[i].Type != w {
+			t.Errorf("child %d = %q, want %q", i, c.Children[i].Type, w)
+		}
+	}
+	// Only the Checkbox and the Slider are focusable.
+	if f := Focusables(c); len(f) != 2 || f[0].Type != TypeCheckbox || f[1].Type != TypeSlider {
+		t.Fatalf("focusables = %+v", f)
+	}
+	// Built-in visual types cannot be overridden.
+	for _, name := range []string{
+		TypeDivider, TypeProgress, TypeCheckbox, TypeSparkline,
+		TypeSlider, TypeBarChart, TypeTable,
+	} {
+		if err := Register(name, func(map[string]string, []*Component) (*Component, error) {
+			return nil, nil
+		}); err == nil {
+			t.Errorf("Register(%q) should fail", name)
+		}
+	}
+}

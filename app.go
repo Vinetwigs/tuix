@@ -418,6 +418,27 @@ func (a *App) HandleKey(key tcell.Key, r rune, mod tcell.ModMask) bool {
 
 	f := a.Focused()
 
+	// A focused Slider uses Left/Right/Home/End to change its value;
+	// Up/Down still move focus through the generic handling below.
+	if f != nil && f.Type == component.TypeSlider {
+		switch key {
+		case tcell.KeyLeft:
+			a.adjustSlider(f, -1)
+			return false
+		case tcell.KeyRight:
+			a.adjustSlider(f, +1)
+			return false
+		case tcell.KeyHome:
+			_, minV, maxV, step := a.sliderRange(f)
+			a.setSliderValue(f, minV, minV, maxV, step)
+			return false
+		case tcell.KeyEnd:
+			_, minV, maxV, step := a.sliderRange(f)
+			a.setSliderValue(f, maxV, minV, maxV, step)
+			return false
+		}
+	}
+
 	// Navigation arrows move focus, except inside inputs and lists.
 	// Single-line inputs: Up/Down hop between fields, Left/Right move
 	// the cursor. Multiline inputs: all four arrows move inside the
@@ -580,6 +601,11 @@ func (a *App) HandleKey(key tcell.Key, r rune, mod tcell.ModMask) bool {
 				if k != "" && r != 0 && (multi || r != '\n') {
 					commit(string(runes[:pos])+string(r)+string(runes[pos:]), pos+1)
 				}
+				return false
+			}
+		case component.TypeCheckbox:
+			if key == tcell.KeyEnter || r == ' ' {
+				a.toggleCheckbox(f)
 				return false
 			}
 		case component.TypeList:
@@ -844,6 +870,87 @@ func (a *App) RenderCells(width, height int) []string {
 				}
 				setText(lx, ly+i, clip(mark+lines[off+i], lw))
 			}
+		case component.TypeDivider:
+			ch := firstRune(c.Attr("char", ""), '-')
+			if c.Attr("vertical", "false") == "true" {
+				if c.Attr("char", "") == "" {
+					ch = '|'
+				}
+				for y := r.Y; y < r.Bottom(); y++ {
+					setText(r.X, y, string(ch))
+				}
+			} else {
+				setText(r.X, r.Y, clip(rowOf(ch, a.store.Render(c.Attr("label", "")), r.W), r.W))
+			}
+		case component.TypeProgress:
+			fill := firstRune(c.Attr("fill", ""), '#')
+			empty := firstRune(c.Attr("empty", ""), '-')
+			bar := progressBar(
+				atof(a.boundValue(c), 0), atof(c.Attr("max", "100"), 100), r.W,
+				fill, empty,
+				c.Attr("brackets", "true") != "false",
+				c.Attr("showValue", "true") != "false",
+			)
+			setText(r.X, r.Y, clip(bar, r.W))
+		case component.TypeCheckbox:
+			mark := "[ ]"
+			if boolValue(a.boundValue(c)) {
+				mark = "[x]"
+			}
+			line := mark
+			if lbl := a.store.Render(c.Attr("label", "")); lbl != "" {
+				line += " " + lbl
+			}
+			if isFocused {
+				line = "> " + line
+			}
+			setText(r.X, r.Y, clip(line, r.W))
+		case component.TypeSparkline:
+			setText(r.X, r.Y, clip(a.sparklineString(c, r.W), r.W))
+		case component.TypeSlider:
+			v, minV, maxV, _ := a.sliderRange(c)
+			bar := sliderBar(
+				v, minV, maxV, r.W,
+				firstRune(c.Attr("fill", ""), '='),
+				firstRune(c.Attr("empty", ""), '-'),
+				firstRune(c.Attr("knob", ""), 'O'),
+				c.Attr("brackets", "true") != "false",
+			)
+			setText(r.X, r.Y, clip(bar, r.W))
+		case component.TypeBarChart:
+			ramp := []rune(c.Attr("chars", defaultRamp))
+			txt := barChart(a.sourceValue(c), r.W, r.H, ramp, atof(c.Attr("max", "0"), 0))
+			for i, ln := range strings.Split(txt, "\n") {
+				if i >= r.H {
+					break
+				}
+				setText(r.X, r.Y+i, clip(ln, r.W))
+			}
+		case component.TypeTable:
+			header, rows, widths := a.tableData(c)
+			maxRows := attrInt(c, "rows", 5)
+			bx, by, bw, bh := r.X, r.Y, r.W, r.H
+			if c.Attr("border", "false") == "true" {
+				drawBox(r, c.Title())
+				bx++
+				by++
+				bw -= 2
+				bh -= 2
+			}
+			if bw < 1 || bh < 1 {
+				break
+			}
+			lines := tableLines(header, rows, widths, bw, maxRows)
+			if len(lines) == 0 {
+				setText(bx, by, clip(c.Attr("empty", "(no rows)"), bw))
+				break
+			}
+			for i, ln := range lines {
+				if i >= bh {
+					break
+				}
+				setText(bx, by+i, clip(ln, bw))
+			}
 		default:
 			// Custom components: render children only.
 		}
@@ -959,6 +1066,29 @@ func (a *App) ClickAt(x, y, w, h int) bool {
 					Value:    lines[c.Sel],
 				})
 			}
+			return true
+		}
+		if c.Type == component.TypeSlider {
+			a.focusComponent(c)
+			v, minV, maxV, step := a.sliderRange(c)
+			start, trackW := sliderTrack(c, r.W, v)
+			pos := x - (r.X + start)
+			frac := 0.0
+			if trackW > 1 {
+				frac = float64(pos) / float64(trackW-1)
+			}
+			if frac < 0 {
+				frac = 0
+			}
+			if frac > 1 {
+				frac = 1
+			}
+			a.setSliderValue(c, minV+frac*(maxV-minV), minV, maxV, step)
+			return true
+		}
+		if c.Type == component.TypeCheckbox {
+			a.focusComponent(c)
+			a.toggleCheckbox(c)
 			return true
 		}
 		name := c.Attr("onActivate", c.Attr("onClick", ""))
@@ -1211,6 +1341,87 @@ func (a *App) renderToScreen(s *backend.Screen, w, h int) {
 							}
 						}
 						s.DrawText(lx, ly+i, lw, row, rst, true)
+					}
+				}
+			}
+		case component.TypeDivider:
+			ch := firstRune(c.Attr("char", ""), '-')
+			if c.Attr("vertical", "false") == "true" {
+				if c.Attr("char", "") == "" {
+					ch = '|'
+				}
+				for y := r.Y; y < r.Bottom(); y++ {
+					s.SetCell(r.X, y, ch, st)
+				}
+			} else if r.W > 0 {
+				s.DrawText(r.X, r.Y, r.W, rowOf(ch, a.store.Render(c.Attr("label", "")), r.W), st, false)
+			}
+		case component.TypeProgress:
+			fill := firstRune(c.Attr("fill", ""), '#')
+			empty := firstRune(c.Attr("empty", ""), '-')
+			bar := progressBar(
+				atof(a.boundValue(c), 0), atof(c.Attr("max", "100"), 100), r.W,
+				fill, empty,
+				c.Attr("brackets", "true") != "false",
+				c.Attr("showValue", "true") != "false",
+			)
+			s.DrawText(r.X, r.Y, r.W, bar, st, false)
+		case component.TypeCheckbox:
+			mark := "[ ]"
+			if boolValue(a.boundValue(c)) {
+				mark = "[x]"
+			}
+			line := mark
+			if lbl := a.store.Render(c.Attr("label", "")); lbl != "" {
+				line += " " + lbl
+			}
+			bst := st
+			if isFocused {
+				bst = focusSt
+			}
+			s.DrawText(r.X, r.Y, r.W, line, bst, false)
+		case component.TypeSparkline:
+			s.DrawText(r.X, r.Y, r.W, a.sparklineString(c, r.W), st, false)
+		case component.TypeSlider:
+			v, minV, maxV, _ := a.sliderRange(c)
+			bar := sliderBar(
+				v, minV, maxV, r.W,
+				firstRune(c.Attr("fill", ""), '='),
+				firstRune(c.Attr("empty", ""), '-'),
+				firstRune(c.Attr("knob", ""), 'O'),
+				c.Attr("brackets", "true") != "false",
+			)
+			s.DrawText(r.X, r.Y, r.W, bar, st, false)
+		case component.TypeBarChart:
+			ramp := []rune(c.Attr("chars", defaultRamp))
+			txt := barChart(a.sourceValue(c), r.W, r.H, ramp, atof(c.Attr("max", "0"), 0))
+			for i, ln := range strings.Split(txt, "\n") {
+				if i >= r.H {
+					break
+				}
+				s.DrawText(r.X, r.Y+i, r.W, ln, st, false)
+			}
+		case component.TypeTable:
+			header, rows, widths := a.tableData(c)
+			maxRows := attrInt(c, "rows", 5)
+			bx, by, bw, bh := r.X, r.Y, r.W, r.H
+			if c.Attr("border", "false") == "true" {
+				s.DrawBox(r, a.store.Render(c.Title()), st)
+				bx++
+				by++
+				bw -= 2
+				bh -= 2
+			}
+			if bw >= 1 && bh >= 1 {
+				lines := tableLines(header, rows, widths, bw, maxRows)
+				if len(lines) == 0 {
+					s.DrawText(bx, by, bw, c.Attr("empty", "(no rows)"), st, false)
+				} else {
+					for i, ln := range lines {
+						if i >= bh {
+							break
+						}
+						s.DrawText(bx, by+i, bw, ln, st, false)
 					}
 				}
 			}
