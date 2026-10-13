@@ -52,26 +52,33 @@ func TestProgressBarFormat(t *testing.T) {
 
 func TestSparklineFormat(t *testing.T) {
 	ramp := []rune("\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588")
-	if got := sparkline("0 1 2 3 4 5", 6, ramp, 0, 0, true); got != "\u2581\u2582\u2583\u2585\u2586\u2588" {
+	if got := sparkline("0 1 2 3 4 5", 6, ramp, 0, 0, false, false); got != "\u2581\u2582\u2583\u2585\u2586\u2588" {
 		t.Fatalf("got %q", got)
 	}
-	if got := sparkline("", 6, ramp, 0, 0, true); got != "" {
+	if got := sparkline("", 6, ramp, 0, 0, false, false); got != "" {
 		t.Fatalf("empty = %q", got)
 	}
 	// A flat series sits on the middle level.
-	if got := sparkline("5 5 5", 6, ramp, 0, 0, true); got != "\u2584\u2584\u2584" {
+	if got := sparkline("5 5 5", 6, ramp, 0, 0, false, false); got != "\u2584\u2584\u2584" {
 		t.Fatalf("flat = %q", got)
 	}
 	// Fixed scale: 0..10 maps 5 to the middle level.
-	if got := sparkline("5 5 5", 3, ramp, 0, 10, false); got != "\u2584\u2584\u2584" {
+	if got := sparkline("5 5 5", 3, ramp, 0, 10, true, true); got != "\u2584\u2584\u2584" {
 		t.Fatalf("fixed = %q", got)
 	}
 	// Fixed scale: values above max clamp to the top level.
-	if got := sparkline("20", 1, ramp, 0, 10, false); got != "\u2588" {
+	if got := sparkline("20", 1, ramp, 0, 10, true, true); got != "\u2588" {
 		t.Fatalf("clamp = %q", got)
 	}
+	// A single bound pins just that side; the other auto-scales.
+	if got := sparkline("5 10 15", 3, ramp, 0, 0, true, false); got != "\u2583\u2585\u2588" {
+		t.Fatalf("min only = %q", got)
+	}
+	if got := sparkline("5 10 15", 3, ramp, 0, 30, false, true); got != "\u2581\u2582\u2583" {
+		t.Fatalf("max only = %q", got)
+	}
 	// More values than width: keep the most recent ones.
-	if got := sparkline("1 2 3 4 5 6", 2, ramp, 0, 0, true); len([]rune(got)) != 2 {
+	if got := sparkline("1 2 3 4 5 6", 2, ramp, 0, 0, false, false); len([]rune(got)) != 2 {
 		t.Fatalf("trim = %q", got)
 	}
 }
@@ -267,7 +274,7 @@ func TestBarChartFormat(t *testing.T) {
 func TestTableFormat(t *testing.T) {
 	header := []string{"NAME", "STATUS"}
 	rows := [][]string{{"nginx", "up"}, {"redis", "down"}}
-	got := tableLines(header, rows, nil, 20, 5)
+	got := tableLines(header, rows, nil, 20, 5, "(none)")
 	if len(got) != 4 { // header + rule + 2 rows
 		t.Fatalf("lines = %d: %q", len(got), got)
 	}
@@ -276,6 +283,29 @@ func TestTableFormat(t *testing.T) {
 	}
 	if !strings.Contains(got[2], "nginx") || !strings.Contains(got[3], "redis") {
 		t.Fatalf("rows = %q", got)
+	}
+}
+
+func TestTableRobustness(t *testing.T) {
+	header := []string{"A", "B"}
+	// Negative and zero column widths must not panic.
+	got := tableLines(header, [][]string{{"x", "y"}}, []int{-3, 0}, 20, 5, "")
+	if len(got) != 3 {
+		t.Fatalf("lines = %d: %q", len(got), got)
+	}
+	// With a header but no data rows, the empty placeholder is shown.
+	empty := tableLines(header, nil, nil, 20, 5, "(nothing)")
+	if len(empty) != 3 || !strings.Contains(empty[2], "(nothing)") {
+		t.Fatalf("empty table = %q", empty)
+	}
+	// A Table with negative widths renders instead of crashing.
+	app, err := LoadString(`<App><Table columns="A,B" source="rows" widths="-3,5"/></App>`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	app.Set("rows", "x|y")
+	if rows := app.RenderCells(30, 6); len(rows) == 0 {
+		t.Fatal("no render")
 	}
 }
 

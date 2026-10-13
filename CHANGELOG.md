@@ -5,6 +5,20 @@ All notable changes to TUIX are recorded here. Format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-10
+
+Patch: fixes for the visual widgets added in 0.2.0, plus docs polish.
+No new features and no breaking changes.
+
+### Fixed
+
+- `Table`: negative or zero `widths` no longer panic; each width is
+  clamped to at least one cell.
+- `Table`: the `empty` placeholder is now drawn when there are header
+  columns but no data rows.
+- `Sparkline`: a single `min` or `max` is honoured (the other bound
+  still auto-scales) instead of being ignored unless both were set.
+
 ## [0.2.0] - 2026-10-10
 
 Visual-widgets release. Adds a set of built-in visual elements and a
@@ -51,6 +65,7 @@ tested, but may still change before v1.
 - Examples: demo, showcase, todo (persistent), studio (playground).
 - Full tag reference in `docs/tags.md`.
 
-[Unreleased]: https://github.com/Vinetwigs/tuix/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Vinetwigs/tuix/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Vinetwigs/tuix/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Vinetwigs/tuix/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Vinetwigs/tuix/releases/tag/v0.1.0

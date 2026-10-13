@@ -99,7 +99,7 @@ func desiredHeight(c *component.Component) int {
 			rows = 1
 		}
 		h := rows
-		if c.Attr("columns", "") != "" {
+		if strings.TrimSpace(c.Attr("columns", "")) != "" {
 			h += 2 // header + rule
 		}
 		if c.Attr("border", "false") == "true" {

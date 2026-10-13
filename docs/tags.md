@@ -130,7 +130,7 @@ height is rows times the tallest child plus gaps and padding.
 | `wrap` | `true` | Word-wrap at the component width; `false` keeps one clipped line |
 | `maxLines` | `0` (fit height) | Cap on rendered lines |
 
-Wrapped text needs an explicit `height`;  layout sizes plain text to
+Wrapped text needs an explicit `height`; layout sizes plain text to
 one row and will not guess wrapped height. Only the rectangle's rows
 are drawn; the rest is clipped.
 
@@ -287,9 +287,10 @@ recent ones win. One row tall.
 | `min` / `max` | auto | Pin the scale so several sparklines are comparable |
 
 With no `min`/`max` the scale comes from the series itself, so a flat
-series sits on the middle level. Set both `min` and `max` to compare
-several sparklines on the same scale; values outside are clamped to
-the ends.
+series sits on the middle level. Pin both to compare several
+sparklines on the same scale, or just one to lock a single side while
+the other keeps auto-scaling; values outside a pinned bound are
+clamped to the ends.
 
 ## Slider
 
@@ -344,8 +345,10 @@ full block. Height defaults to 3 rows.
 A read-only table. `columns` is a comma-separated header (interpolated);
 rows come from the store key `source`, one row per line, with cells
 separated by `sep`. Column widths are shared equally unless `widths`
-(a comma-separated list) is given. `rows` caps how many data rows are
-drawn; `border="true"` adds a frame.
+(a comma-separated list, each clamped to at least one cell) is given.
+`rows` caps how many data rows are drawn; `border="true"` adds a frame.
+When there are no rows the `empty` placeholder is drawn below the
+header.
 
 | Attribute | Default | Meaning |
 |---|---|---|

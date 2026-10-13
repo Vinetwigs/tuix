@@ -143,12 +143,12 @@ func progressBar(value, maxV float64, width int, fill, empty rune, brackets, sho
 }
 
 // sparkline renders a numeric series as a one-line chart on the given
-// ramp. The values are scaled to [lo, hi]; when autoScale is set the
-// bounds come from the series itself, otherwise the caller pins them
-// so several sparklines share a comparable scale. A flat series sits
-// on the middle level. When there are more values than columns, only
-// the most recent ones are kept.
-func sparkline(series string, width int, ramp []rune, lo, hi float64, autoScale bool) string {
+// ramp. Bounds can be pinned per side: hasLo/hasHi select whether lo/hi
+// are taken from the caller or derived from the series, so a single
+// min or max is honoured while the other side still auto-scales. A flat
+// series sits on the middle level. When there are more values than
+// columns, only the most recent ones are kept.
+func sparkline(series string, width int, ramp []rune, lo, hi float64, hasLo, hasHi bool) string {
 	if width <= 0 || len(ramp) < 2 {
 		return ""
 	}
@@ -156,15 +156,21 @@ func sparkline(series string, width int, ramp []rune, lo, hi float64, autoScale 
 	if len(nums) == 0 {
 		return ""
 	}
-	if autoScale {
-		lo, hi = nums[0], nums[0]
+	if !hasLo || !hasHi {
+		mn, mx := nums[0], nums[0]
 		for _, v := range nums {
-			if v < lo {
-				lo = v
+			if v < mn {
+				mn = v
 			}
-			if v > hi {
-				hi = v
+			if v > mx {
+				mx = v
 			}
+		}
+		if !hasLo {
+			lo = mn
+		}
+		if !hasHi {
+			hi = mx
 		}
 	}
 	if len(nums) > width {
@@ -193,18 +199,14 @@ func sparkline(series string, width int, ramp []rune, lo, hi float64, autoScale 
 const defaultRamp = "\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588"
 
 // sparklineString renders a Sparkline component at the given width,
-// honouring the optional chars/min/max attributes.
+// honouring the optional chars/min/max attributes. A single min or max
+// pins just that side; the other keeps auto-scaling.
 func (a *App) sparklineString(c *component.Component, width int) string {
 	ramp := []rune(c.Attr("chars", defaultRamp))
 	loS := strings.TrimSpace(c.Attr("min", ""))
 	hiS := strings.TrimSpace(c.Attr("max", ""))
-	auto := true
-	var lo, hi float64
-	if loS != "" && hiS != "" {
-		lo, hi = atof(loS, 0), atof(hiS, 0)
-		auto = hi <= lo
-	}
-	return sparkline(a.sourceValue(c), width, ramp, lo, hi, auto)
+	return sparkline(a.sourceValue(c), width, ramp,
+		atof(loS, 0), atof(hiS, 0), loS != "", hiS != "")
 }
 
 // sliderRange reads a Slider's bounds and current value from the
@@ -378,8 +380,11 @@ func barChart(series string, width, height int, ramp []rune, maxV float64) strin
 }
 
 // tableLines renders a read-only table: an optional header row and
-// rule, then up to maxRows data rows spread over total columns.
-func tableLines(header []string, rows [][]string, widths []int, total, maxRows int) []string {
+// rule, then up to maxRows data rows spread over total columns. When
+// there are no data rows it shows the empty placeholder instead (below
+// the header, when there is one). Column widths are clamped to at least
+// one cell so bad markup cannot panic.
+func tableLines(header []string, rows [][]string, widths []int, total, maxRows int, empty string) []string {
 	if total <= 0 {
 		return nil
 	}
@@ -389,12 +394,20 @@ func tableLines(header []string, rows [][]string, widths []int, total, maxRows i
 			ncols = len(r)
 		}
 	}
-	if ncols == 0 || maxRows <= 0 {
+	if ncols == 0 {
 		return nil
+	}
+	if maxRows <= 0 {
+		maxRows = 1
 	}
 	colW := make([]int, ncols)
 	if len(widths) == ncols {
-		copy(colW, widths)
+		for i, w := range widths {
+			if w < 1 {
+				w = 1
+			}
+			colW[i] = w
+		}
 	} else {
 		base := (total - (ncols - 1)) / ncols
 		if base < 1 {
@@ -405,6 +418,9 @@ func tableLines(header []string, rows [][]string, widths []int, total, maxRows i
 		}
 	}
 	pad := func(s string, w int) string {
+		if w < 0 {
+			w = 0
+		}
 		rs := []rune(s)
 		if len(rs) > w {
 			return string(rs[:w])
@@ -430,6 +446,12 @@ func tableLines(header []string, rows [][]string, widths []int, total, maxRows i
 	if len(header) > 0 {
 		out = append(out, line(header))
 		out = append(out, strings.Repeat("-", total))
+	}
+	if len(rows) == 0 {
+		if empty != "" {
+			out = append(out, pad(empty, total))
+		}
+		return out
 	}
 	for i, r := range rows {
 		if i >= maxRows {

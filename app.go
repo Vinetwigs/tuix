@@ -940,7 +940,7 @@ func (a *App) RenderCells(width, height int) []string {
 			if bw < 1 || bh < 1 {
 				break
 			}
-			lines := tableLines(header, rows, widths, bw, maxRows)
+			lines := tableLines(header, rows, widths, bw, maxRows, c.Attr("empty", "(no rows)"))
 			if len(lines) == 0 {
 				setText(bx, by, clip(c.Attr("empty", "(no rows)"), bw))
 				break
@@ -1413,7 +1413,7 @@ func (a *App) renderToScreen(s *backend.Screen, w, h int) {
 				bh -= 2
 			}
 			if bw >= 1 && bh >= 1 {
-				lines := tableLines(header, rows, widths, bw, maxRows)
+				lines := tableLines(header, rows, widths, bw, maxRows, c.Attr("empty", "(no rows)"))
 				if len(lines) == 0 {
 					s.DrawText(bx, by, bw, c.Attr("empty", "(no rows)"), st, false)
 				} else {

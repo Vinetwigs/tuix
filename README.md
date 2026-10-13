@@ -34,7 +34,7 @@ if err := app.Run(); err != nil {
 }
 ```
 
-> Status: early development (`v0.2.0`). It builds, it runs, and it is
+> Status: early development (`v0.2.1`). It builds, it runs, and it is
 > tested but the API has only been used by its own examples so far
 > and may still change before `v1`. Tested on Windows; Linux and macOS
 > should work through tcell but have not been tried yet.
